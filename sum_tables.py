@@ -1,12 +1,9 @@
 import asyncio
 from playwright.async_api import async_playwright
 
-# Seed URLs (example pattern)
-seeds = list(range(56, 66))
-base_url = "https://example.com/seed{}"  # replace with actual prefix
-
 async def extract_and_sum(page, url):
     await page.goto(url)
+    await page.wait_for_selector("table")
     tables = await page.query_selector_all("table")
     total = 0
     for table in tables:
@@ -19,16 +16,22 @@ async def extract_and_sum(page, url):
     return total
 
 async def main():
+    base_url = "https://sanand0.github.io/tdsdata/js_table/?seed={}"
+    seeds = range(56, 66)  # Seeds 56 to 65
+
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         page = await browser.new_page()
-        total_sum = 0
+
+        grand_total = 0
         for seed in seeds:
             url = base_url.format(seed)
-            sum_seed = await extract_and_sum(page, url)
-            print(f"Seed {seed} sum: {sum_seed}")
-            total_sum += sum_seed
-        print("✅ TOTAL SUM:", total_sum)
+            page_sum = await extract_and_sum(page, url)
+            print(f"Seed {seed} total: {page_sum}")
+            grand_total += page_sum
+
+        print("✅ TOTAL SUM:", grand_total)
+
         await browser.close()
 
 asyncio.run(main())
